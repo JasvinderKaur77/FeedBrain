@@ -182,7 +182,10 @@ async function handleSave() {
 // ─── SAVE CURRENT TAB ─────────────────────────────────────
 async function saveCurrentTab() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tab && tab.url && !tab.url.startsWith('chrome://')) {
+  if (tab && tab.url &&
+      !tab.url.startsWith('chrome://') &&
+      !tab.url.startsWith('chrome-extension://') &&
+      !tab.url.startsWith('about:')) {
     document.getElementById('urlInput').value = tab.url;
   }
 }
@@ -377,14 +380,13 @@ function setupEventListeners() {
     if (e.key === 'Enter') handleSave();
   });
 
-  async function saveCurrentTab() {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  if (tab && tab.url && 
-      !tab.url.startsWith('chrome://') && 
-      !tab.url.startsWith('chrome-extension://') &&
-      !tab.url.startsWith('about:')) {
-    document.getElementById('urlInput').value = tab.url;
-  }
-}
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    document.body.classList.toggle('light');
+    const isDark = !document.body.classList.contains('light');
+    document.getElementById('themeToggle').textContent = isDark ? '🌙' : '☀️';
+    chrome.storage.local.set({ theme: isDark ? 'dark' : 'light' });
+  });
+
+  saveCurrentTab();
   setupTabs();
 }

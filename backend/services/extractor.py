@@ -75,34 +75,66 @@ def extract_youtube(url: str) -> dict:
 
 def extract_article(url: str) -> dict:
     try:
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.5",
+        }
+        
         downloaded = trafilatura.fetch_url(url)
-        if not downloaded:
-            return {"title": "Article", "content": "", "error": "Could not fetch URL"}
         
-        content = trafilatura.extract(
-            downloaded,
-            include_title=True,
-            include_comments=False,
-            include_tables=False
-        )
+        if downloaded:
+            content = trafilatura.extract(
+                downloaded,
+                include_title=True,
+                include_comments=False,
+                include_tables=False,
+                no_fallback=False
+            )
+            
+            metadata = trafilatura.extract_metadata(downloaded)
+            title = metadata.title if metadata and metadata.title else "Article"
+            
+            if content and len(content) > 100:
+                return {
+                    "title": title,
+                    "content": content[:8000],
+                    "source_type": "article"
+                }
         
-        if not content:
-            return {"title": "Article", "content": "", "error": "Could not extract content"}
+        # Fallback — try with httpx directly
+        import httpx
+        response = httpx.get(url, headers=headers, timeout=15, follow_redirects=True)
         
-        # Get title separately
-        metadata = trafilatura.extract_metadata(downloaded)
-        title = metadata.title if metadata and metadata.title else "Article"
-        
-        # Limit to 8000 chars
-        content = content[:8000]
+        if response.status_code == 200:
+            # Try trafilatura on the response text
+            content = trafilatura.extract(response.text, include_title=True)
+            
+            if content and len(content) > 100:
+                import re
+                title_match = re.search(r'<title>(.*?)</title>', response.text, re.IGNORECASE)
+                title = title_match.group(1) if title_match else "Article"
+                title = title[:100]
+                
+                return {
+                    "title": title,
+                    "content": content[:8000],
+                    "source_type": "article"
+                }
         
         return {
-            "title": title,
-            "content": content,
+            "title": "Article",
+            "content": f"Article saved from {url}. Content extraction limited.",
             "source_type": "article"
         }
+        
     except Exception as e:
-        return {"title": "Article", "content": "", "error": str(e)}
+        return {
+            "title": "Article",
+            "content": f"Article saved from {url}",
+            "source_type": "article",
+            "error": str(e)
+        }
 
 def extract_pdf(file_bytes: bytes) -> dict:
     try:
