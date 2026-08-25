@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-dotenv
+supabase
+qdrant-client
+anthropic
+youtube-transcript-api
+trafilatura
+pymupdf
+httpx
+python-multipart
+fastembed
+google-genai
