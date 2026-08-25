@@ -6,6 +6,8 @@ from db.qdrant_client import init_collection
 import os
 from routes.save import router as save_router
 from routes.search import router as search_router
+from routes.digest import router as digest_router
+from routes.auth import router as auth_router
 
 load_dotenv()
 
@@ -25,6 +27,9 @@ app.add_middleware(
 
 app.include_router(save_router)
 app.include_router(search_router)
+app.include_router(digest_router)
+app.include_router(auth_router)
+
 @app.on_event("startup")
 async def startup_event():
     print("🧠 FeedBrain starting up...")

@@ -84,3 +84,23 @@ async def save_url(request: SaveRequest):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error saving content: {str(e)}")
+
+@router.get("/saves")
+async def get_saves(user_id: str):
+    try:
+        supabase = get_supabase()
+        result = supabase.table("saves")\
+            .select("*")\
+            .eq("user_id", user_id)\
+            .order("created_at", desc=True)\
+            .execute()
+        
+        return {
+            "saves": result.data,
+            "total": len(result.data)
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error fetching saves: {str(e)}"
+        )
