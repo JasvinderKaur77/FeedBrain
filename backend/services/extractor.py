@@ -3,6 +3,7 @@ import httpx
 import trafilatura
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound
+from youtube_transcript_api.proxies import WebshareProxyConfig
 import pymupdf as fitz
 import os
 
@@ -40,8 +41,6 @@ def extract_youtube(url: str) -> dict:
         ytt_api = YouTubeTranscriptApi()
         transcript_list = ytt_api.fetch(video_id)
         transcript = " ".join([t.text for t in transcript_list])
-        
-        # Limit to 8000 chars to save API costs
         transcript = transcript[:8000]
         
         return {
@@ -49,12 +48,30 @@ def extract_youtube(url: str) -> dict:
             "content": transcript,
             "source_type": "youtube"
         }
-    except TranscriptsDisabled:
-        return {"title": "YouTube Video", "content": "", "error": "Transcripts disabled for this video"}
-    except NoTranscriptFound:
-        return {"title": "YouTube Video", "content": "", "error": "No transcript found"}
     except Exception as e:
-        return {"title": "YouTube Video", "content": "", "error": str(e)}
+        # Try fetching page title at least
+        try:
+            import httpx
+            response = httpx.get(
+                f"https://www.youtube.com/watch?v={video_id}",
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"},
+                timeout=10
+            )
+            import re
+            title_match = re.search(r'<title>(.*?)</title>', response.text)
+            title = title_match.group(1).replace(' - YouTube', '') if title_match else f"YouTube Video ({video_id})"
+            
+            return {
+                "title": title,
+                "content": f"YouTube video: {title}. Video ID: {video_id}. Auto-transcript unavailable on server.",
+                "source_type": "youtube"
+            }
+        except:
+            return {
+                "title": f"YouTube Video ({video_id})",
+                "content": f"YouTube video ID: {video_id}",
+                "source_type": "youtube"
+            }
 
 def extract_article(url: str) -> dict:
     try:

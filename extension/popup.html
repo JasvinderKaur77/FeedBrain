@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FeedBrain</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+  <!-- AUTH SCREEN -->
+  <div class="auth-screen" id="authScreen">
+    <div class="logo">🧠 FeedBrain</div>
+    <p class="tagline">Save anything.<br>Forget nothing.<br>Your second memory.</p>
+    
+    <div class="input-group">
+      <input type="email" id="authEmail" placeholder="Email address" />
+      <input type="password" id="authPassword" placeholder="Password" />
+      <p class="error-msg" id="authError"></p>
+      <p class="success-msg" id="authSuccess"></p>
+      <button class="btn btn-primary" id="loginBtn">Login</button>
+      <button class="btn btn-secondary" id="signupBtn">Create Account</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div class="app-screen" id="appScreen" style="display:none">
+    
+    <!-- Header -->
+    <div class="header">
+      <div class="header-logo">🧠 FeedBrain</div>
+      <div style="display:flex; align-items:center; gap:12px">
+        <span class="user-email" id="userEmail"></span>
+        <button class="logout-btn" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <!-- Save Bar -->
+    <div class="save-bar">
+      <input type="text" id="urlInput" placeholder="Paste a URL to save..." />
+      <button class="btn-save" id="saveBtn">Save 🧠</button>
+    </div>
+    <div class="processing" id="processingMsg" style="display:none">
+      ⚡ Processing your save...
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-tab="search">🔍 Search</button>
+      <button class="tab" data-tab="library">📚 Library</button>
+      <button class="tab" data-tab="digest">✨ Digest</button>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+      <!-- SEARCH TAB -->
+      <div id="searchTab">
+        <div class="search-bar">
+          <input type="text" id="searchInput" placeholder="Search by meaning... e.g. 'machine learning basics'" />
+          <button class="search-btn" id="searchBtn">Search</button>
+        </div>
+        <div id="searchResults">
+          <div class="empty-state">
+            <div class="emoji">🔍</div>
+            <p>Search your saves by meaning</p>
+            <p style="font-size:12px; margin-top:8px">Try "productivity tips" or "machine learning"</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIBRARY TAB -->
+      <div id="libraryTab" style="display:none">
+        <div id="libraryContent">
+          <div class="loading">Loading your saves...</div>
+        </div>
+      </div>
+
+      <!-- DIGEST TAB -->
+      <div id="digestTab" style="display:none">
+        <div class="digest-header">✨ Today's Resurfaces</div>
+        <p class="digest-sub">Based on what you've been saving lately</p>
+        <div id="digestContent">
+          <div class="loading">Loading your digest...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
