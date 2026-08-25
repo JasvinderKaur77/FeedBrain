@@ -298,10 +298,11 @@ function renderCard(save, relevanceReason = null) {
   const sourceType = save.source_type || 'other';
 
   return `
-    <div class="save-card">
+    <div class="save-card" id="card-${save.id}">
       <div class="card-header">
         <span class="source-badge badge-${sourceType}">${sourceType}</span>
         <span class="card-title">${save.title || 'Untitled'}</span>
+        <button onclick="deleteSave('${save.id}')" style="background:none;border:none;color:#555;cursor:pointer;font-size:16px;margin-left:auto">🗑️</button>
       </div>
       ${relevanceReason ? `<div class="relevance">✓ ${relevanceReason}</div>` : ''}
       <ul class="card-summary">
@@ -313,6 +314,24 @@ function renderCard(save, relevanceReason = null) {
       <a href="${save.url}" target="_blank" class="card-link">View original →</a>
     </div>
   `;
+}
+
+async function deleteSave(saveId) {
+  if (!confirm('Delete this save?')) return;
+  
+  try {
+    const res = await fetch(`${API_BASE}/saves/${saveId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: currentUser.id })
+    });
+    
+    if (res.ok) {
+      document.getElementById(`card-${saveId}`).remove();
+    }
+  } catch (e) {
+    console.error('Delete failed:', e);
+  }
 }
 
 // ─── HELPERS ──────────────────────────────────────────────

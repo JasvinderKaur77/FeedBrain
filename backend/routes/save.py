@@ -104,3 +104,30 @@ async def get_saves(user_id: str):
             status_code=500,
             detail=f"Error fetching saves: {str(e)}"
         )
+
+@router.delete("/saves/{save_id}")
+async def delete_save(save_id: str, user_id: str):
+    try:
+        supabase = get_supabase()
+        
+        # Get qdrant_id first
+        save = supabase.table("saves")\
+            .select("qdrant_id")\
+            .eq("id", save_id)\
+            .eq("user_id", user_id)\
+            .execute()
+        
+        if not save.data:
+            raise HTTPException(status_code=404, detail="Save not found")
+        
+        # Delete from Supabase
+        supabase.table("saves")\
+            .delete()\
+            .eq("id", save_id)\
+            .eq("user_id", user_id)\
+            .execute()
+        
+        return {"message": "Deleted successfully"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
